@@ -36,8 +36,6 @@ class App:
             self.filterSpeakers(line)
             self.createRenderTable(line)
 
-        self.filteredRenderTable = self.filterRenderTable()
-
         self.createDocument()
         self.successfulConvert()
 
@@ -57,7 +55,7 @@ class App:
 
         table = document.add_table(0, 4)
         table.style = "Table Grid"
-        for index, item in enumerate(self.filteredRenderTable):
+        for index, item in enumerate(self.renderTable):
             table.add_row()
             scene, characters, description, sceneCount = item
             if index > 0:
@@ -80,37 +78,20 @@ class App:
             return True
         return False
 
-    def filterRenderTable(self):
-        sceneCount = self.countScenes()
-
-        seen = set()
-        seen_add = seen.add
-        filteredRenderTable = [x for x in self.renderTable if not (x[0] in seen or seen_add(x[0]))]
-        
-        for key in sceneCount:
-            elementInSublist = [key in items for items in filteredRenderTable]
-            itemIndex = elementInSublist.index(True)
-            filteredRenderTable[itemIndex].append(sceneCount[filteredRenderTable[itemIndex][0]])
-
-        filteredRenderTable[0].pop(4)
-        return filteredRenderTable
-
-
-    def countScenes(self):
-        sceneCount = {item[0]:0 for item in self.renderTable}
-        for index, item in enumerate(self.renderTable):
-            if index > 0:
-                sceneCount[item[0]] += 1
-        return sceneCount
-
     def createRenderTable(self, line):
         if line.strip().startswith("scene"):
             lineArgs = line.strip().split(" ")
             scene = lineArgs[1]
+            elementInSublist = [scene == item[0] for item in self.renderTable]
+            if any(elementInSublist):
+                itemIndex = elementInSublist.index(True)
+                self.renderTable[itemIndex][3] += 1
+                return
+            
             characters = list(filter(lambda speaker: self.speakerFilter(line, speaker), self.config["speakers"]))
             desc = " ".join(lineArgs[2:])
             desc = desc[1:].strip()
-            self.renderTable.append([scene, characters, desc])
+            self.renderTable.append([scene, characters, desc, 1])
 
     def successfulConvert(self):
         homeScr.label_Infomation.configure(text=f"File Successfully Converted.\nNew File: {self.docx_file}")
