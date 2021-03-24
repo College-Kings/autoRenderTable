@@ -20,7 +20,7 @@ class HomeScreen:
 
         self.button_explore.place(anchor="center", relx=0.5, rely=0.2)
 
-        self.label_Infomation.place(anchor="center", relx=0.5, rely=0.6)
+        self.label_Infomation.place(anchor="center", relx=0.5, rely=0.65)
 
         self.root.mainloop()
 
